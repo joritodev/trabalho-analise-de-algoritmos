@@ -1,0 +1,106 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #0a0c0f;
+  --color-surface: #101317;
+  --color-surface-2: #151a20;
+  --color-surface-3: #1c222a;
+  --color-line: #232a33;
+  --color-line-strong: #323b47;
+  --color-ink: #e8eaed;
+  --color-ink-2: #a3aab4;
+  --color-ink-3: #6c7480;
+  --color-accent: #3987e5;
+
+  /* Operações da matriz (paleta categórica validada para fundo escuro) */
+  --color-op-ins: #3987e5;
+  --color-op-sub: #d95926;
+  --color-op-match: #199e70;
+  --color-op-del: #c98500;
+  --color-dup: #e66767;
+
+  /* Séries do benchmark: cor fixa por algoritmo */
+  --color-s-naive: #d95926;
+  --color-s-wf: #3987e5;
+  --color-s-uk: #199e70;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--color-accent) 40%, transparent);
+}
+
+/* Barras de rolagem discretas, estilo ferramenta de desenvolvedor */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line-strong) transparent;
+}
+
+input[type="range"] {
+  accent-color: var(--color-accent);
+}
+
+@keyframes cell-in {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-cell-in {
+  animation: cell-in 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes fade-up {
+  from {
+    transform: translateY(4px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 240ms ease-out;
+}
+
+/* Hachura para regiões "não calculadas" (Módulo D) */
+.hatch {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent 0 4px,
+    color-mix(in oklab, var(--color-ink-3) 55%, transparent) 4px 5.5px
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+}
