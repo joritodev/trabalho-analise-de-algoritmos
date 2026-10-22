@@ -4,7 +4,7 @@ subtitle: "Otimização da Distância de Levenshtein: análise de pior caso, pro
 author:
   - "João Victor de Carvalho Montenegro"
   - "Davi Studart Fontenele"
-date: "FB UNI · Análise de Algoritmos · Prof. [Nome do professor] · 2026"
+date: "FB UNI · Análise de Algoritmos · Prof. Maikol · 2026"
 lang: pt-BR
 ---
 

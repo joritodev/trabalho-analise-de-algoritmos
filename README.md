@@ -1,6 +1,6 @@
 # Levenshtein Lab
 
-**Integrantes:** João Victor de Carvalho Montenegro e Davi Studart Fontenele
+**Integrantes:** João Victor de Carvalho Montenegro e Davi Studart Fontenele · **Professor:** Maikol
 
 Projeto final de **Análise de Algoritmos (FB UNI)**: *Busca aproximada e correção ortográfica em tempo real: otimização da distância de Levenshtein*.
 
