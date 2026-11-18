@@ -20,6 +20,7 @@ Requer Node.js 18.18 ou superior.
 npm install
 npm run dev               # http://localhost:3000
 npm run check             # testes de correção e de contagem de operações
+npm run test:complexidade # comprova tempo e espaço (contagem, tempo real e bytes medidos)
 npm run build             # exportação estática em out/ (para servidor na raiz)
 npm run export:portable   # out/ com caminhos relativos (qualquer subpasta)
 ```
@@ -30,6 +31,7 @@ npm run export:portable   # out/ com caminhos relativos (qualquer subpasta)
 src/
   lib/levenshtein.ts             núcleo: algoritmos puros e instrumentados
   lib/__tests__/levenshtein.check.ts
+scripts/complexidade.ts          teste empírico de complexidade temporal e espacial
   workers/benchmark.worker.ts    stress test fora da thread principal
   components/
     AppShell.tsx                 cabeçalho, abas e navegação por hash (#matrix, #bench, ...)
@@ -42,9 +44,11 @@ src/
       RecursionTree.tsx          Módulo C: árvore de chamadas, duplicados em vermelho
       UkkonenCut.tsx             Módulo D: slider de k e máscara diagonal
       MemoryXray.tsx             Módulo E: matriz completa × duas linhas
+      Enade.tsx                  2 questões modelo ENADE com correção interativa
 docs/
   relatorio.md                   fonte do relatório (Markdown + LaTeX)
   relatorio.pdf / relatorio.docx versões geradas
+  resultados-complexidade.md     saída do teste de complexidade
 ```
 
 ## Regenerar o relatório

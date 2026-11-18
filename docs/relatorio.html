@@ -39,6 +39,7 @@ thead th { border-top: 2px solid #333; border-bottom: 1.5px solid #333; }
 tbody tr:last-child td { border-bottom: 2px solid #333; }
 blockquote { margin: 1em 0; padding: .5em 1em; border-left: 3px solid #888; background: #f7f7f7; page-break-inside: avoid; }
 math[display="block"] { margin: .7em 0; }
+td[style*="right"] { white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -60,9 +61,11 @@ algoritmos para o problema: a recursão ingênua, o algoritmo de
 Wagner-Fischer (programação dinâmica) e a variante de Ukkonen com faixa
 diagonal limitada por um limiar de erros
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>.
-Para cada um, provamos formalmente o custo de <strong>pior caso</strong>
-e o confirmamos empiricamente contando operações numa implementação em
-TypeScript. Os resultados são: a recursão ingênua é exponencial, com
+Para cada um, provamos formalmente a complexidade <strong>temporal e
+espacial</strong> de <strong>pior caso</strong> e a comprovamos
+empiricamente numa implementação em TypeScript instrumentada, que mede
+operações, tempo real e bytes de memória. Os resultados são: a recursão
+ingênua é exponencial, com
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Ω</mi><mrow><mo stretchy="true" form="prefix">(</mo><msup><mn>4</mn><mi>n</mi></msup><mi>/</mi><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>≤</mo><mi>T</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>≤</mo><mi>O</mi><mrow><mo stretchy="true" form="prefix">(</mo><msup><mn>9</mn><mi>n</mi></msup><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\Omega(4^n/n) \le T(n) \le O(9^n)</annotation></semantics></math>
 e, de forma exata,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mi>Θ</mi><mo minsize="1.2" maxsize="1.2" stretchy="false" form="prefix">(</mo><msup><mrow><mo stretchy="true" form="prefix">(</mo><mn>3</mn><mo>+</mo><mn>2</mn><msqrt><mn>2</mn></msqrt><mo stretchy="true" form="postfix">)</mo></mrow><mi>n</mi></msup><mi>/</mi><msqrt><mi>n</mi></msqrt><mo minsize="1.2" maxsize="1.2" stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">T(n) = \Theta\big((3+2\sqrt2)^n/\sqrt n\big)</annotation></semantics></math>;
@@ -292,12 +295,50 @@ Tabela 1 mostra
 enquanto
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>3</mn><mn>13</mn></msup><mo>≈</mo><mn>1</mn><mo>,</mo><mn>6</mn><mo>⋅</mo><msup><mn>10</mn><mn>6</mn></msup></mrow><annotation encoding="application/x-tex">3^{13} \approx 1{,}6\cdot10^6</annotation></semantics></math>.</p>
 </blockquote>
-<p><strong>Espaço.</strong> A profundidade máxima da pilha é
+<p><strong>Teorema E1 (espaço da recursão).</strong> Para
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>m</mi><mo>,</mo><mi>n</mi><mo>≥</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">m, n \ge 1</annotation></semantics></math>,
+a pilha de execução atinge exatamente
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>m</mi><mo>+</mo><mi>n</mi></mrow><annotation encoding="application/x-tex">m+n</annotation></semantics></math>
-(cada chamada reduz
+quadros. Logo a complexidade espacial é
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Θ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>m</mi><mo>+</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\Theta(m+n)</annotation></semantics></math>,
+embora o tempo seja exponencial.</p>
+<p><em>Prova.</em> Cada quadro guarda apenas
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>j</mi><annotation encoding="application/x-tex">j</annotation></semantics></math>,
+o custo
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>c</mi><annotation encoding="application/x-tex">c</annotation></semantics></math>
+e resultados parciais: memória
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">O(1)</annotation></semantics></math>.
+Em cada instante, os quadros vivos formam o caminho da raiz até a
+chamada em execução na árvore de recorrência, porque os ramos já
+encerrados foram desempilhados.</p>
+<p><strong>(Limite superior.)</strong> Ao longo desse caminho,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi><mo>+</mo><mi>j</mi></mrow><annotation encoding="application/x-tex">i+j</annotation></semantics></math>
-em pelo menos 1), logo o espaço é
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>m</mi><mo>+</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">O(m+n)</annotation></semantics></math>.</p>
+diminui pelo menos 1 a cada nível, começa em
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>m</mi><mo>+</mo><mi>n</mi></mrow><annotation encoding="application/x-tex">m+n</annotation></semantics></math>
+e o caminho termina assim que
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">i = 0</annotation></semantics></math>
+ou
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>j</mi><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">j = 0</annotation></semantics></math>.
+A última chamada não base tem
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi><mo>,</mo><mi>j</mi><mo>≥</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">i, j \ge 1</annotation></semantics></math>,
+ou seja,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi><mo>+</mo><mi>j</mi><mo>≥</mo><mn>2</mn></mrow><annotation encoding="application/x-tex">i + j \ge 2</annotation></semantics></math>.
+Assim, há no máximo
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>m</mi><mo>+</mo><mi>n</mi><mo>−</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">m+n-1</annotation></semantics></math>
+quadros não base e mais um quadro base: no máximo
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>m</mi><mo>+</mo><mi>n</mi></mrow><annotation encoding="application/x-tex">m+n</annotation></semantics></math>
+quadros.</p>
+<p><strong>(O limite é atingido.)</strong> A sequência
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mo stretchy="true" form="prefix">(</mo><mi>m</mi><mo>,</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>→</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>m</mi><mo>−</mo><mn>1</mn><mo>,</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>→</mo><mi>⋯</mi><mo>→</mo><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>,</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>→</mo><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>,</mo><mi>n</mi><mo>−</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow><mo>→</mo><mi>⋯</mi><mo>→</mo><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>,</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow><mo>→</mo><mrow><mo stretchy="true" form="prefix">(</mo><mn>0</mn><mo>,</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">(m,n) \to (m-1,n) \to \cdots \to (1,n) \to (1,n-1) \to \cdots \to (1,1) \to (0,1)</annotation></semantics></math>
+é um ramo da árvore com exatamente
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>m</mi><mo>+</mo><mi>n</mi></mrow><annotation encoding="application/x-tex">m+n</annotation></semantics></math>
+chamadas, e o percurso em profundidade sempre o visita.
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>◼</mi><annotation encoding="application/x-tex">\blacksquare</annotation></semantics></math></p>
+<p>Este é um exemplo de que <strong>tempo e espaço são medidas
+independentes</strong>: a árvore tem
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Θ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>5</mn><mo>,</mo><msup><mn>83</mn><mi>n</mi></msup><mi>/</mi><msqrt><mi>n</mi></msqrt><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\Theta(5{,}83^n/\sqrt n)</annotation></semantics></math>
+nós, mas só um caminho dela está na memória a cada instante.</p>
 <h1 id="abordagem-2-wagner-fischer-programação-dinâmica">4. Abordagem 2:
 Wagner-Fischer (programação dinâmica)</h1>
 <p>A recursão recalcula os mesmos subproblemas inúmeras vezes, mas só
@@ -378,7 +419,7 @@ podemos trocar as cadeias para que o comprimento das linhas seja
 <p>O custo dessa otimização é perder a tabela usada no
 <em>backtracking</em>, que reconstrói o alinhamento. Para obter o
 alinhamento em espaço linear existe o algoritmo de Hirschberg [4]. A
-Tabela 3 mostra o impacto prático: para
+Tabela 6 mostra o impacto prático: para
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>m</mi><mo>=</mo><mi>n</mi><mo>=</mo><msup><mn>10</mn><mn>5</mn></msup></mrow><annotation encoding="application/x-tex">m = n = 10^5</annotation></semantics></math>
 com inteiros de 4 bytes, a tabela completa precisaria de cerca de 37 GB,
 enquanto as duas linhas ocupam 781 KB.</p>
@@ -543,26 +584,57 @@ a resposta sai em
 sem calcular nenhuma célula:
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Ω</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\Omega(1)</annotation></semantics></math>.
 Com entradas aleatórias, o corte antecipado também costuma ocorrer nas
-primeiras linhas. Nas medições da Tabela 2, cadeias aleatórias com
+primeiras linhas. Nas medições da Tabela 4, cadeias aleatórias com
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi><mo>=</mo><mn>5</mn></mrow><annotation encoding="application/x-tex">k = 5</annotation></semantics></math>
-calcularam entre 51 e 84 células, independentemente de
+calcularam entre 51 e 73 células, independentemente de
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math>.</p>
-<p><strong>Espaço.</strong> Com duas linhas,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Θ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mo>min</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>m</mi><mo>,</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\Theta(\min(m,n))</annotation></semantics></math>,
-como no Teorema 4.</p>
-<h1 id="validação-empírica">6. Validação empírica</h1>
-<p>Todos os algoritmos foram implementados em TypeScript (arquivo
-<code>src/lib/levenshtein.ts</code>) com um <strong>contador de
-operações elementares</strong>. A correção foi verificada por testes
-automáticos (<code>npm run check</code>):</p>
+<p><strong>Teorema E2 (espaço do Ukkonen).</strong> A implementação
+aloca exatamente
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mrow><mo stretchy="true" form="prefix">(</mo><mo>min</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>m</mi><mo>,</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>+</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">2(\min(m,n)+1)</annotation></semantics></math>
+inteiros quando
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mo stretchy="true" form="prefix">|</mo><mi>m</mi><mo>−</mo><mi>n</mi><mo stretchy="true" form="postfix">|</mo></mrow><mo>≤</mo><mi>k</mi></mrow><annotation encoding="application/x-tex">|m-n| \le k</annotation></semantics></math>,
+e nenhum quando
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mo stretchy="true" form="prefix">|</mo><mi>m</mi><mo>−</mo><mi>n</mi><mo stretchy="true" form="postfix">|</mo></mrow><mo>&gt;</mo><mi>k</mi></mrow><annotation encoding="application/x-tex">|m-n| &gt; k</annotation></semantics></math>.
+O espaço é
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Θ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mo>min</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>m</mi><mo>,</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\Theta(\min(m,n))</annotation></semantics></math>
+no pior caso e
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">O(1)</annotation></semantics></math>
+no melhor.</p>
+<p><em>Prova.</em> As únicas estruturas proporcionais à entrada são as
+duas linhas <code>prev</code> e <code>cur</code>, de tamanho
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>min</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>m</mi><mo>,</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>+</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">\min(m,n)+1</annotation></semantics></math>
+após a troca das cadeias. Pelo argumento do Teorema 4, duas linhas
+bastam, pois a faixa da linha
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>
+só lê a faixa da linha
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi><mo>−</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">i-1</annotation></semantics></math>.
+No corte por comprimento, o algoritmo retorna antes de alocá-las.
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>◼</mi><annotation encoding="application/x-tex">\blacksquare</annotation></semantics></math></p>
+<p><em>Observação.</em> Como cada linha usa só
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mi>k</mi><mo>+</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">2k+1</annotation></semantics></math>
+posições, seria possível indexar as linhas pela diagonal e reduzir o
+espaço para
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Θ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>k</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\Theta(k)</annotation></semantics></math>.
+Mantivemos a versão
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Θ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mo>min</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>m</mi><mo>,</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\Theta(\min(m,n))</annotation></semantics></math>
+por simplicidade, e ela é a que foi medida na Seção 6.</p>
+<h1 id="comprovação-empírica-de-tempo-e-espaço">6. Comprovação empírica
+de tempo e espaço</h1>
+<p>As provas das Seções 3 a 5 foram testadas na implementação em
+TypeScript (<code>src/lib/levenshtein.ts</code>). Cada função é
+<strong>instrumentada</strong>: além da distância, devolve a contagem da
+operação elementar (<code>ops</code>) e o pico de memória de trabalho
+(<code>memory</code>), medido durante a própria execução. São inteiros
+alocados simultaneamente, na programação dinâmica, ou a profundidade
+máxima da pilha, na recursão.</p>
+<h2 id="metodologia">6.1 Metodologia</h2>
+<p>Há dois conjuntos de testes automáticos.</p>
+<p><strong><code>npm run check</code> (correção).</strong></p>
 <ul>
 <li>5 000 pares aleatórios, nos quais as quatro implementações
 (recursiva, matriz completa, duas linhas e Ukkonen com
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi><mo>=</mo><mn>0</mn><mi>.</mi><mn>.12</mn></mrow><annotation encoding="application/x-tex">k = 0..12</annotation></semantics></math>)
 concordam;</li>
-<li>o contador da recursão é <strong>igual</strong>, chamada a chamada,
-ao valor previsto pela recorrência
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>m</mi><mo>,</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">T(m,n)</annotation></semantics></math>;</li>
 <li>a fórmula exata
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mo stretchy="true" form="prefix">(</mo><mn>2</mn><mi>k</mi><mo>+</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow><mi>n</mi><mo>−</mo><mi>k</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>k</mi><mo>+</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">(2k+1)n - k(k+1)</annotation></semantics></math>
 do Teorema 6 vale para todo
@@ -570,12 +642,65 @@ do Teorema 6 vale para todo
 e
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0</mn><mo>≤</mo><mi>k</mi><mo>≤</mo><mi>n</mi></mrow><annotation encoding="application/x-tex">0 \le k \le n</annotation></semantics></math>.</li>
 </ul>
-<p>Os tempos abaixo foram medidos com Node.js 22 (motor V8) num Intel
-Xeon 2,1 GHz. No navegador os valores absolutos variam, mas as
-proporções se mantêm.</p>
-<p><strong>Tabela 1 — Recursão ingênua (qualquer entrada).</strong>
-Contagem medida igual à prevista em todas as linhas.</p>
+<p><strong><code>npm run test:complexidade</code> (tempo e
+espaço).</strong> Para cada algoritmo, o teste verifica:</p>
+<ol type="1">
+<li><strong>Tempo por contagem.</strong> A operação elementar medida tem
+de ser <strong>igual</strong> à fórmula exata do pior caso.</li>
+<li><strong>Tempo real.</strong> Ao <strong>dobrar</strong>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math>,
+o tempo deve se multiplicar por cerca de
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mn>2</mn><mi>p</mi></msup><annotation encoding="application/x-tex">2^p</annotation></semantics></math>
+para um custo
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Θ</mi><mrow><mo stretchy="true" form="prefix">(</mo><msup><mi>n</mi><mi>p</mi></msup><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\Theta(n^p)</annotation></semantics></math>:
+por 4 no Wagner-Fischer
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>n</mi><mn>2</mn></msup><annotation encoding="application/x-tex">n^2</annotation></semantics></math>)
+e por 2 no Ukkonen com
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>
+fixo
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math>).
+Na recursão, cada letra a mais deve multiplicar o tempo por um fator
+entre 4 e 9.</li>
+<li><strong>Espaço por contagem.</strong> A memória de trabalho medida
+pelo algoritmo tem de ser igual à fórmula provada:
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>m</mi><mo>+</mo><mi>n</mi></mrow><annotation encoding="application/x-tex">m+n</annotation></semantics></math>
+quadros (Teorema E1),
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mo stretchy="true" form="prefix">(</mo><mi>m</mi><mo>+</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow><mrow><mo stretchy="true" form="prefix">(</mo><mi>n</mi><mo>+</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">(m+1)(n+1)</annotation></semantics></math>
+ou
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mrow><mo stretchy="true" form="prefix">(</mo><mo>min</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>m</mi><mo>,</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>+</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">2(\min(m,n)+1)</annotation></semantics></math>
+inteiros (Teorema 4 e Teorema E2).</li>
+<li><strong>Espaço real em bytes.</strong> No instante de pico, com
+todas as estruturas ainda vivas, o algoritmo chama uma função de sonda,
+que lê <code>process.memoryUsage().arrayBuffers</code> do Node.js. A
+coleta de lixo é forçada e síncrona antes de cada medição
+(<code>--expose-gc --single-threaded-gc</code>), para que a linha de
+base não contenha lixo de execuções anteriores. Os bytes medidos têm de
+bater com
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>4</mn><mo>×</mo></mrow><annotation encoding="application/x-tex">4 \times</annotation></semantics></math>
+o número de inteiros (erro menor que 5%), e dobrar
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math>
+deve multiplicar a memória por 4 (matriz) ou por 2 (duas linhas).</li>
+<li><strong>Espaço
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Θ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mo>min</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>m</mi><mo>,</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\Theta(\min(m,n))</annotation></semantics></math>.</strong>
+Fixando a palavra curta e aumentando só a longa, a memória das duas
+linhas não pode mudar.</li>
+</ol>
+<p><strong>Resultado: 93 de 93 verificações passaram,</strong> em três
+execuções consecutivas. As tabelas abaixo saem desse teste, que também
+grava <code>docs/resultados-complexidade.md</code>. Ambiente: Node.js 22
+(V8), Intel Xeon 2,1 GHz. Tempos absolutos variam com a máquina;
+contagens e memória são determinísticas.</p>
+<h2 id="recursão-ingênua">6.2 Recursão ingênua</h2>
+<p><strong>Tabela 1 — Tempo e espaço da recursão (qualquer entrada é
+pior caso).</strong></p>
 <table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
 <thead>
 <tr class="header">
 <th style="text-align: right;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math></th>
@@ -583,6 +708,7 @@ Contagem medida igual à prevista em todas as linhas.</p>
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>n</mi><mo>,</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">T(n,n)</annotation></semantics></math></th>
 <th style="text-align: right;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>/</mi><mi>T</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>n</mi><mo>−</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">T(n)/T(n-1)</annotation></semantics></math></th>
 <th style="text-align: right;">Tempo</th>
+<th style="text-align: right;">Pilha medida (quadros)</th>
 </tr>
 </thead>
 <tbody>
@@ -591,42 +717,49 @@ Contagem medida igual à prevista em todas as linhas.</p>
 <td style="text-align: right;">481</td>
 <td style="text-align: right;">5,117</td>
 <td style="text-align: right;">0,03 ms</td>
+<td style="text-align: right;">8</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">6</td>
 <td style="text-align: right;">13 483</td>
 <td style="text-align: right;">5,342</td>
 <td style="text-align: right;">0,62 ms</td>
+<td style="text-align: right;">12</td>
 </tr>
 <tr class="odd">
 <td style="text-align: right;">8</td>
 <td style="text-align: right;">398 593</td>
 <td style="text-align: right;">5,463</td>
 <td style="text-align: right;">3,4 ms</td>
+<td style="text-align: right;">16</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">9</td>
 <td style="text-align: right;">2 193 844</td>
 <td style="text-align: right;">5,504</td>
 <td style="text-align: right;">15,9 ms</td>
+<td style="text-align: right;">18</td>
 </tr>
 <tr class="odd">
 <td style="text-align: right;">10</td>
 <td style="text-align: right;">12 146 179</td>
 <td style="text-align: right;">5,536</td>
 <td style="text-align: right;">79,5 ms</td>
+<td style="text-align: right;">20</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">11</td>
 <td style="text-align: right;">67 570 078</td>
 <td style="text-align: right;">5,563</td>
 <td style="text-align: right;">434 ms</td>
+<td style="text-align: right;">22</td>
 </tr>
 <tr class="odd">
 <td style="text-align: right;">12</td>
 <td style="text-align: right;">377 393 953</td>
 <td style="text-align: right;">5,585</td>
 <td style="text-align: right;"><strong>2,41 s</strong></td>
+<td style="text-align: right;">24</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">13</td>
@@ -634,6 +767,7 @@ Contagem medida igual à prevista em todas as linhas.</p>
 (previsto)</td>
 <td style="text-align: right;">5,604</td>
 <td style="text-align: right;">≈ 13 s (extrapolado)</td>
+<td style="text-align: right;">26</td>
 </tr>
 <tr class="odd">
 <td style="text-align: right;">20</td>
@@ -641,6 +775,7 @@ Contagem medida igual à prevista em todas as linhas.</p>
 (previsto)</td>
 <td style="text-align: right;">—</td>
 <td style="text-align: right;">≈ 29 dias</td>
+<td style="text-align: right;">40</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">30</td>
@@ -648,120 +783,330 @@ Contagem medida igual à prevista em todas as linhas.</p>
 (previsto)</td>
 <td style="text-align: right;">—</td>
 <td style="text-align: right;">≈ 2,9 milhões de anos</td>
+<td style="text-align: right;">60</td>
 </tr>
 </tbody>
 </table>
-<p>A razão
+<ul>
+<li><strong>Tempo.</strong> A razão
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>/</mi><mi>T</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>n</mi><mo>−</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">T(n)/T(n-1)</annotation></semantics></math>
 fica entre 4 e 9 (Teoremas 1 e 2) e converge para
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>3</mn><mo>+</mo><mn>2</mn><msqrt><mn>2</mn></msqrt><mo>≈</mo><mn>5</mn><mo>,</mo><mn>83</mn></mrow><annotation encoding="application/x-tex">3 + 2\sqrt2 \approx 5{,}83</annotation></semantics></math>
-(Observação da Seção 3). Cada letra a mais multiplica o tempo por cerca
-de 5,6: com 12 letras a função já leva segundos, o que confirma
-empiricamente o limite de 12–13 letras.</p>
-<p><strong>Tabela 2 — Wagner-Fischer (duas linhas) e Ukkonen
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi><mo>=</mo><mn>5</mn></mrow><annotation encoding="application/x-tex">k = 5</annotation></semantics></math>).</strong>
-No Ukkonen foi usado o pior caso
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>a</mi><mo>=</mo><mi>b</mi></mrow><annotation encoding="application/x-tex">a = b</annotation></semantics></math>).</p>
-<table>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>3</mn><mo>+</mo><mn>2</mn><msqrt><mn>2</mn></msqrt><mo>≈</mo><mn>5</mn><mo>,</mo><mn>83</mn></mrow><annotation encoding="application/x-tex">3 + 2\sqrt2 \approx 5{,}83</annotation></semantics></math>.
+Cada letra a mais multiplica o tempo por cerca de 5,6, o que confirma
+empiricamente o limite de 12–13 letras.</li>
+<li><strong>Espaço.</strong> A pilha medida é exatamente
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mi>n</mi><mo>=</mo><mi>m</mi><mo>+</mo><mi>n</mi></mrow><annotation encoding="application/x-tex">2n = m+n</annotation></semantics></math>
+em todas as linhas, e também nos casos
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>m</mi><mo>≠</mo><mi>n</mi></mrow><annotation encoding="application/x-tex">m \ne n</annotation></semantics></math>
+testados
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>3</mn><mo>×</mo><mn>9</mn></mrow><annotation encoding="application/x-tex">3 \times 9</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>9</mn><mo>×</mo><mn>3</mn></mrow><annotation encoding="application/x-tex">9 \times 3</annotation></semantics></math>).
+Enquanto o tempo cresce cerca de
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>5</mn><mo>,</mo><mn>6</mn><mo>×</mo></mrow><annotation encoding="application/x-tex">5{,}6\times</annotation></semantics></math>
+por letra, a memória cresce só 2 quadros por letra.</li>
+</ul>
+<h2 id="wagner-fischer">6.3 Wagner-Fischer</h2>
+<p><strong>Tabela 2 — Tempo e espaço do Wagner-Fischer (qualquer entrada
+é pior caso).</strong> Bytes medidos no pico de memória.</p>
+<table style="width:100%;">
 <colgroup>
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
 </colgroup>
 <thead>
 <tr class="header">
 <th style="text-align: right;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math></th>
-<th style="text-align: right;">WF: células</th>
-<th style="text-align: right;">WF:
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="normal">ops</mtext><mi>/</mi><msup><mi>n</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">\text{ops}/n^2</annotation></semantics></math></th>
-<th style="text-align: right;">WF: tempo</th>
-<th style="text-align: right;">Ukkonen: células</th>
-<th style="text-align: right;">Ukkonen:
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="normal">ops</mtext><mi>/</mi><mrow><mo stretchy="true" form="prefix">(</mo><mrow><mo stretchy="true" form="prefix">(</mo><mn>2</mn><mi>k</mi><mo>+</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\text{ops}/((2k{+}1)n)</annotation></semantics></math></th>
-<th style="text-align: right;">Ukkonen: tempo</th>
-<th style="text-align: right;">Ukkonen (aleatória): células</th>
+<th style="text-align: right;">Células</th>
+<th style="text-align: right;">Células<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>/</mi><msup><mi>n</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">/n^2</annotation></semantics></math></th>
+<th style="text-align: right;">Tempo</th>
+<th style="text-align: right;">×tempo</th>
+<th style="text-align: right;">Matriz completa</th>
+<th style="text-align: right;">×mem</th>
+<th style="text-align: right;">Duas linhas</th>
+<th style="text-align: right;">×mem</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: right;">100</td>
-<td style="text-align: right;">10 000</td>
+<td style="text-align: right;">250</td>
+<td style="text-align: right;">62 500</td>
 <td style="text-align: right;">1,000</td>
-<td style="text-align: right;">0,06 ms</td>
-<td style="text-align: right;">1 070</td>
-<td style="text-align: right;">0,973</td>
-<td style="text-align: right;">0,010 ms</td>
-<td style="text-align: right;">62</td>
+<td style="text-align: right;">0,44 ms</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">246,1 KB</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">2,0 KB</td>
+<td style="text-align: right;">—</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">500</td>
 <td style="text-align: right;">250 000</td>
 <td style="text-align: right;">1,000</td>
-<td style="text-align: right;">1,8 ms</td>
-<td style="text-align: right;">5 470</td>
-<td style="text-align: right;">0,995</td>
-<td style="text-align: right;">0,039 ms</td>
-<td style="text-align: right;">84</td>
+<td style="text-align: right;">2,11 ms</td>
+<td style="text-align: right;">4,80</td>
+<td style="text-align: right;">980,5 KB</td>
+<td style="text-align: right;">3,98</td>
+<td style="text-align: right;">3,9 KB</td>
+<td style="text-align: right;">2,00</td>
 </tr>
 <tr class="odd">
 <td style="text-align: right;">1 000</td>
 <td style="text-align: right;">1 000 000</td>
 <td style="text-align: right;">1,000</td>
-<td style="text-align: right;">7,3 ms</td>
-<td style="text-align: right;">10 970</td>
-<td style="text-align: right;">0,997</td>
-<td style="text-align: right;">0,077 ms</td>
-<td style="text-align: right;">62</td>
+<td style="text-align: right;">10,57 ms</td>
+<td style="text-align: right;">5,02</td>
+<td style="text-align: right;">3,82 MB</td>
+<td style="text-align: right;">3,99</td>
+<td style="text-align: right;">7,8 KB</td>
+<td style="text-align: right;">2,00</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">2 000</td>
 <td style="text-align: right;">4 000 000</td>
 <td style="text-align: right;">1,000</td>
-<td style="text-align: right;">29,7 ms</td>
-<td style="text-align: right;">21 970</td>
-<td style="text-align: right;">0,999</td>
-<td style="text-align: right;">0,159 ms</td>
-<td style="text-align: right;">51</td>
+<td style="text-align: right;">31,26 ms</td>
+<td style="text-align: right;">2,96</td>
+<td style="text-align: right;">15,27 MB</td>
+<td style="text-align: right;">4,00</td>
+<td style="text-align: right;">15,6 KB</td>
+<td style="text-align: right;">2,00</td>
 </tr>
 <tr class="odd">
 <td style="text-align: right;">4 000</td>
 <td style="text-align: right;">16 000 000</td>
 <td style="text-align: right;">1,000</td>
-<td style="text-align: right;">96,1 ms</td>
-<td style="text-align: right;">43 970</td>
-<td style="text-align: right;">0,999</td>
-<td style="text-align: right;">0,289 ms</td>
-<td style="text-align: right;">62</td>
+<td style="text-align: right;">124,13 ms</td>
+<td style="text-align: right;">3,97</td>
+<td style="text-align: right;">61,07 MB</td>
+<td style="text-align: right;">4,00</td>
+<td style="text-align: right;">31,3 KB</td>
+<td style="text-align: right;">2,00</td>
 </tr>
 </tbody>
 </table>
-<p>Leitura da tabela:</p>
 <ul>
-<li><strong>Wagner-Fischer.</strong> A razão
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="normal">ops</mtext><mi>/</mi><msup><mi>n</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">\text{ops}/n^2</annotation></semantics></math>
-é exatamente 1 e o tempo quadruplica quando
+<li><strong>Tempo
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Θ</mi><mrow><mo stretchy="true" form="prefix">(</mo><msup><mi>n</mi><mn>2</mn></msup><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\Theta(n^2)</annotation></semantics></math>.</strong>
+A contagem é exatamente
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>n</mi><mn>2</mn></msup><annotation encoding="application/x-tex">n^2</annotation></semantics></math>
+e o tempo real se multiplica, em média, por cerca de 4 quando
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math>
-dobra: comportamento quadrático.</li>
-<li><strong>Ukkonen.</strong> A razão
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="normal">ops</mtext><mi>/</mi><mrow><mo stretchy="true" form="prefix">(</mo><mrow><mo stretchy="true" form="prefix">(</mo><mn>2</mn><mi>k</mi><mo>+</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\text{ops}/((2k+1)n)</annotation></semantics></math>
-converge para 1 e o tempo dobra quando
+dobra. As oscilações vêm do cache e do compilador JIT.</li>
+<li><strong>Espaço.</strong> Os bytes reais da matriz se multiplicam por
+<strong>4,00</strong> ao dobrar
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math>
-dobra: comportamento linear em
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math>
-para
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Θ</mi><mrow><mo stretchy="true" form="prefix">(</mo><msup><mi>n</mi><mn>2</mn></msup><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\Theta(n^2)</annotation></semantics></math>),
+e os das duas linhas por <strong>2,00</strong>
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Θ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\Theta(n)</annotation></semantics></math>).
+Os bytes medidos coincidem com
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>4</mn><mo>×</mo></mrow><annotation encoding="application/x-tex">4 \times</annotation></semantics></math>
+o número de inteiros alocados.</li>
+</ul>
+<p><strong>Tabela 3 — Espaço
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Θ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mo>min</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>m</mi><mo>,</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\Theta(\min(m,n))</annotation></semantics></math>:
+palavra curta fixa em 200 letras.</strong></p>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>m</mi><annotation encoding="application/x-tex">m</annotation></semantics></math>
+(palavra longa)</th>
+<th style="text-align: right;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math>
+(palavra curta)</th>
+<th style="text-align: right;">Duas linhas</th>
+<th style="text-align: right;">Matriz completa</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">500</td>
+<td style="text-align: right;">200</td>
+<td style="text-align: right;">1,6 KB</td>
+<td style="text-align: right;">393,4 KB</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2 000</td>
+<td style="text-align: right;">200</td>
+<td style="text-align: right;">1,6 KB</td>
+<td style="text-align: right;">1,53 MB</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">8 000</td>
+<td style="text-align: right;">200</td>
+<td style="text-align: right;">1,6 KB</td>
+<td style="text-align: right;">6,13 MB</td>
+</tr>
+</tbody>
+</table>
+<p>A versão de duas linhas não cresce com a palavra longa, como prevê o
+Teorema 4, enquanto a matriz cresce linearmente com
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>m</mi><annotation encoding="application/x-tex">m</annotation></semantics></math>.</p>
+<h2 id="ukkonen">6.4 Ukkonen</h2>
+<p><strong>Tabela 4 — Tempo e espaço do Ukkonen,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi><mo>=</mo><mn>5</mn></mrow><annotation encoding="application/x-tex">k = 5</annotation></semantics></math>,
+pior caso
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>a</mi><mo>=</mo><mi>b</mi></mrow><annotation encoding="application/x-tex">a = b</annotation></semantics></math>).</strong></p>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math></th>
+<th style="text-align: right;">Células</th>
+<th style="text-align: right;">Células<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>/</mi><mrow><mo stretchy="true" form="prefix">(</mo><mrow><mo stretchy="true" form="prefix">(</mo><mn>2</mn><mi>k</mi><mo>+</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">/((2k{+}1)n)</annotation></semantics></math></th>
+<th style="text-align: right;">Tempo</th>
+<th style="text-align: right;">×tempo</th>
+<th style="text-align: right;">Memória medida</th>
+<th style="text-align: right;">Células (entrada aleatória)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1 000</td>
+<td style="text-align: right;">10 970</td>
+<td style="text-align: right;">0,9973</td>
+<td style="text-align: right;">0,087 ms</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">7,8 KB</td>
+<td style="text-align: right;">73</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2 000</td>
+<td style="text-align: right;">21 970</td>
+<td style="text-align: right;">0,9986</td>
+<td style="text-align: right;">0,182 ms</td>
+<td style="text-align: right;">2,09</td>
+<td style="text-align: right;">15,6 KB</td>
+<td style="text-align: right;">62</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">4 000</td>
+<td style="text-align: right;">43 970</td>
+<td style="text-align: right;">0,9993</td>
+<td style="text-align: right;">0,343 ms</td>
+<td style="text-align: right;">1,89</td>
+<td style="text-align: right;">31,3 KB</td>
+<td style="text-align: right;">51</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">8 000</td>
+<td style="text-align: right;">87 970</td>
+<td style="text-align: right;">0,9997</td>
+<td style="text-align: right;">0,832 ms</td>
+<td style="text-align: right;">2,43</td>
+<td style="text-align: right;">62,5 KB</td>
+<td style="text-align: right;">62</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">16 000</td>
+<td style="text-align: right;">175 970</td>
+<td style="text-align: right;">0,9998</td>
+<td style="text-align: right;">1,330 ms</td>
+<td style="text-align: right;">1,60</td>
+<td style="text-align: right;">125,0 KB</td>
+<td style="text-align: right;">51</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Tabela 5 — Ukkonen com
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi><mo>=</mo><mn>8</mn><mspace width="0.167em"></mspace><mn>000</mn></mrow><annotation encoding="application/x-tex">n = 8\,000</annotation></semantics></math>
+fixo, variando
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>
-fixo.</li>
-<li><strong>Curvas planas.</strong> Uma razão
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="normal">ops</mtext><mi>/</mi><mtext mathvariant="normal">limite</mtext></mrow><annotation encoding="application/x-tex">\text{ops}/\text{limite}</annotation></semantics></math>
-que fica constante quando
+(pior caso).</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: right;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math></th>
+<th style="text-align: right;">Células</th>
+<th style="text-align: right;">Células<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>/</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>k</mi><mo>⋅</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">/(k\cdot n)</annotation></semantics></math></th>
+<th style="text-align: right;">Tempo</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">39 994</td>
+<td style="text-align: right;">2,500</td>
+<td style="text-align: right;">0,33 ms</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">71 980</td>
+<td style="text-align: right;">2,249</td>
+<td style="text-align: right;">0,83 ms</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">135 928</td>
+<td style="text-align: right;">2,124</td>
+<td style="text-align: right;">1,48 ms</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">263 728</td>
+<td style="text-align: right;">2,060</td>
+<td style="text-align: right;">2,44 ms</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">32</td>
+<td style="text-align: right;">518 944</td>
+<td style="text-align: right;">2,027</td>
+<td style="text-align: right;">4,80 ms</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Tempo
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Θ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>k</mi><mo>⋅</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\Theta(k\cdot n)</annotation></semantics></math>.</strong>
+A contagem coincide com
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mo stretchy="true" form="prefix">(</mo><mn>2</mn><mi>k</mi><mo>+</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow><mi>n</mi><mo>−</mo><mi>k</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>k</mi><mo>+</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">(2k+1)n - k(k+1)</annotation></semantics></math>
+em todos os casos. Com
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>
+fixo, o tempo dobra quando
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math>
-cresce é a evidência empírica de que o limite de pior caso provado é
-apertado.</li>
+dobra (Tabela 4). Com
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math>
+fixo, a razão
+células<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>/</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>k</mi><mo>⋅</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">/(k \cdot n)</annotation></semantics></math>
+converge para 2 (Tabela 5), ou seja, o custo também é linear em
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>.</li>
+<li><strong>Melhor caso
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Ω</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\Omega(1)</annotation></semantics></math>.</strong>
+Com
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mo stretchy="true" form="prefix">|</mo><mi>m</mi><mo>−</mo><mi>n</mi><mo stretchy="true" form="postfix">|</mo></mrow><mo>&gt;</mo><mi>k</mi></mrow><annotation encoding="application/x-tex">|m - n| &gt; k</annotation></semantics></math>
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>m</mi><mo>=</mo><mn>100</mn><mspace width="0.167em"></mspace><mn>000</mn></mrow><annotation encoding="application/x-tex">m = 100\,000</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi><mo>=</mo><mn>10</mn></mrow><annotation encoding="application/x-tex">n = 10</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi><mo>=</mo><mn>3</mn></mrow><annotation encoding="application/x-tex">k = 3</annotation></semantics></math>),
+o teste mediu 0 células e 0 bytes alocados. Com entradas aleatórias, o
+corte antecipado limita o trabalho a dezenas de células,
+independentemente de
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math>.</li>
+<li><strong>Espaço
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Θ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mo>min</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>m</mi><mo>,</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\Theta(\min(m,n))</annotation></semantics></math>.</strong>
+A memória dobra quando
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math>
+dobra e coincide com
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mrow><mo stretchy="true" form="prefix">(</mo><mi>n</mi><mo>+</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">2(n+1)</annotation></semantics></math>
+inteiros de 4 bytes (Teorema E2).</li>
 </ul>
 <blockquote>
 <p><strong>Lição de implementação.</strong> Uma primeira versão do
@@ -769,12 +1114,18 @@ Ukkonen reiniciava a linha inteira (<code>fill</code>) a cada iteração.
 O contador de células continuava linear, mas o tempo crescia de forma
 quadrática, porque o <code>fill</code> custa
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">O(n)</annotation></semantics></math>
-por linha. A versão final reinicia apenas a célula de borda da faixa.
-Isso mostra que a operação elementar escolhida na análise precisa de
-fato dominar o custo real.</p>
+por linha. O teste de tempo real (“dobrar
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math>
+dobra o tempo”) detectou o problema. A versão final reinicia apenas a
+célula de borda da faixa. Isso mostra que a operação elementar escolhida
+na análise precisa de fato dominar o custo real, e por isso medir só a
+contagem não basta.</p>
 </blockquote>
-<p><strong>Tabela 3 — Memória (inteiros de 4 bytes,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>m</mi><mo>=</mo><mi>n</mi></mrow><annotation encoding="application/x-tex">m = n</annotation></semantics></math>).</strong></p>
+<h2 id="projeção-de-memória-para-entradas-grandes">6.5 Projeção de
+memória para entradas grandes</h2>
+<p><strong>Tabela 6 — Memória teórica (inteiros de 4 bytes,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>m</mi><mo>=</mo><mi>n</mi></mrow><annotation encoding="application/x-tex">m = n</annotation></semantics></math>),
+validada pelas medições acima.</strong></p>
 <table>
 <thead>
 <tr class="header">
@@ -841,8 +1192,8 @@ fato dominar o custo real.</p>
 <td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Ω</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\Omega(1)</annotation></semantics></math></td>
 </tr>
 <tr class="odd">
-<td>Espaço</td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>m</mi><mo>+</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">O(m+n)</annotation></semantics></math>
+<td>Espaço (pior caso)</td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Θ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>m</mi><mo>+</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\Theta(m+n)</annotation></semantics></math>
 (pilha)</td>
 <td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Θ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>m</mi><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\Theta(mn)</annotation></semantics></math>
 ou
@@ -850,13 +1201,21 @@ ou
 <td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Θ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mo>min</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>m</mi><mo>,</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\Theta(\min(m,n))</annotation></semantics></math></td>
 </tr>
 <tr class="even">
+<td>Espaço medido
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi><mo>=</mo><mn>4</mn><mspace width="0.167em"></mspace><mn>000</mn></mrow><annotation encoding="application/x-tex">n = 4\,000</annotation></semantics></math>)</td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mi>n</mi></mrow><annotation encoding="application/x-tex">2n</annotation></semantics></math>
+quadros</td>
+<td>61 MB ou 31 KB</td>
+<td>31 KB</td>
+</tr>
+<tr class="odd">
 <td>Resposta</td>
 <td>distância exata</td>
 <td>distância exata + alinhamento</td>
 <td>distância se
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>≤</mo><mi>k</mi></mrow><annotation encoding="application/x-tex">\le k</annotation></semantics></math></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>Técnica de prova</td>
 <td>indução + Pascal</td>
 <td>somatório duplo</td>
@@ -910,12 +1269,12 @@ e desenha o caminho ótimo do <em>backtracking</em></td>
 </tr>
 <tr class="even">
 <td><strong>B. Stress test</strong></td>
-<td>Mede operações ×
+<td>Mede operações <strong>e memória</strong> ×
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math>
 ao vivo num <em>Web Worker</em>; mostra a razão
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>/</mi><mi>T</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>n</mi><mo>−</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">T(n)/T(n-1)</annotation></semantics></math>
-e as razões ops/limite</td>
-<td>Teoremas 1, 2, 3 e 6; Tabelas 1 e 2</td>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>/</mi><mi>T</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>n</mi><mo>−</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">T(n)/T(n-1)</annotation></semantics></math>,
+as razões ops/limite e o gráfico de espaço medido</td>
+<td>Teoremas 1 a 4, 6, E1 e E2; Tabelas 1 a 4</td>
 </tr>
 <tr class="odd">
 <td><strong>C. Árvore de recorrência</strong></td>
@@ -935,7 +1294,13 @@ abandonadas</td>
 <td><strong>E. Raio-X de memória</strong></td>
 <td>Compara a matriz completa com duas linhas, até
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi><mo>=</mo><msup><mn>10</mn><mn>6</mn></msup></mrow><annotation encoding="application/x-tex">n = 10^6</annotation></semantics></math></td>
-<td>Teorema 4 e Tabela 3</td>
+<td>Teorema 4 e Tabela 6</td>
+</tr>
+<tr class="even">
+<td><strong>ENADE</strong></td>
+<td>As duas questões do Apêndice A, com correção e resolução
+comentada</td>
+<td>Teoremas E1, 6 e Lema 3</td>
 </tr>
 </tbody>
 </table>
@@ -954,24 +1319,36 @@ sem executar bilhões de chamadas.</li>
 </ul>
 <p>Para executar: <code>npm install &amp;&amp; npm run dev</code>,
 depois abrir <code>http://localhost:3000</code>. Os testes rodam com
-<code>npm run check</code>.</p>
+<code>npm run check</code> (correção) e
+<code>npm run test:complexidade</code> (tempo e espaço).</p>
 <h1 id="conclusão">9. Conclusão</h1>
-<p>Provamos formalmente o custo de pior caso das três abordagens e
-confirmamos cada limite com contagens exatas de operações:</p>
+<p>Provamos formalmente a complexidade <strong>temporal e
+espacial</strong> de pior caso das três abordagens e comprovamos cada
+limite com testes automáticos: contagem exata de operações, tempo real e
+bytes de memória medidos (93 de 93 verificações):</p>
 <ul>
-<li>a <strong>recursão ingênua</strong> é exponencial em todas as
-entradas, crescendo cerca de
+<li>a <strong>recursão ingênua</strong> é exponencial no tempo em todas
+as entradas, crescendo cerca de
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>5</mn><mo>,</mo><mn>83</mn><mo>×</mo></mrow><annotation encoding="application/x-tex">5{,}83\times</annotation></semantics></math>
-por letra;</li>
+por letra, mas usa só
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Θ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>m</mi><mo>+</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\Theta(m+n)</annotation></semantics></math>
+de memória;</li>
 <li><strong>Wagner-Fischer</strong> elimina a recomputação e atinge
+tempo
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Θ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>m</mi><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\Theta(mn)</annotation></semantics></math>,
-com espaço reduzível a
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Θ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mo>min</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>m</mi><mo>,</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\Theta(\min(m,n))</annotation></semantics></math>;</li>
+com espaço reduzível de
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Θ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>m</mi><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\Theta(mn)</annotation></semantics></math>
+para
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Θ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mo>min</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>m</mi><mo>,</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\Theta(\min(m,n))</annotation></semantics></math>,
+como mostram os fatores 4,00 e 2,00 medidos ao dobrar
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math>;</li>
 <li><strong>Ukkonen</strong> explora o limiar
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>
-e atinge
+e atinge tempo
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Θ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>k</mi><mo>⋅</mo><mo>min</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>m</mi><mo>,</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\Theta(k\cdot\min(m,n))</annotation></semantics></math>
-no pior caso e
+e espaço
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Θ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mo>min</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>m</mi><mo>,</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\Theta(\min(m,n))</annotation></semantics></math>
+no pior caso, e
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Ω</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\Omega(1)</annotation></semantics></math>
 no melhor, o que o torna adequado para correção ortográfica em tempo
 real.</li>
@@ -980,6 +1357,149 @@ real.</li>
 alinhada com a implementação: um detalhe como reiniciar uma linha
 inteira pode, sem alterar a contagem de células, transformar um
 algoritmo linear em quadrático.</p>
+<h1 id="apêndice-a-questões-modelo-enade">Apêndice A — Questões modelo
+ENADE</h1>
+<p>As questões seguem o formato do ENADE e estão também na aba
+<strong>ENADE</strong> da aplicação, com correção interativa.</p>
+<h2 id="questão-1">Questão 1</h2>
+<p>Um corretor ortográfico calcula a distância de Levenshtein entre duas
+palavras
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>a</mi><annotation encoding="application/x-tex">a</annotation></semantics></math>
+e
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>b</mi><annotation encoding="application/x-tex">b</annotation></semantics></math>,
+de tamanhos
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>m</mi><annotation encoding="application/x-tex">m</annotation></semantics></math>
+e
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math>,
+com a função recursiva a seguir, sem memoização.</p>
+<pre class="text"><code>lev(i, j):
+    se i = 0: retorne j
+    se j = 0: retorne i
+    c ← 0 se a[i] = b[j], senão 1
+    retorne min(lev(i−1, j) + 1, lev(i, j−1) + 1, lev(i−1, j−1) + c)</code></pre>
+<p>Em testes com palavras de 12 letras, a função executou cerca de
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>3</mn><mo>,</mo><mn>8</mn><mo>⋅</mo><msup><mn>10</mn><mn>8</mn></msup></mrow><annotation encoding="application/x-tex">3{,}8 \cdot 10^8</annotation></semantics></math>
+chamadas. Ainda assim, o consumo de memória permaneceu pequeno durante
+toda a execução.</p>
+<p>Considerando essa situação, avalie as asserções a seguir e a relação
+proposta entre elas.</p>
+<p>I. Embora o tempo de execução dessa função seja exponencial, sua
+complexidade espacial é
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>m</mi><mo>+</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">O(m + n)</annotation></semantics></math>.</p>
+<p><strong>PORQUE</strong></p>
+<ol start="2" type="I">
+<li>Em cada instante, a pilha de execução contém apenas as chamadas do
+caminho entre a chamada inicial e a chamada atual, e cada chamada reduz
+o valor de
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi><mo>+</mo><mi>j</mi></mrow><annotation encoding="application/x-tex">i + j</annotation></semantics></math>
+em pelo menos uma unidade.</li>
+</ol>
+<p>A respeito dessas asserções, assinale a opção correta.</p>
+<ol type="A">
+<li>As asserções I e II são proposições verdadeiras, e a II é uma
+justificativa correta da I.</li>
+<li>As asserções I e II são proposições verdadeiras, mas a II não é uma
+justificativa correta da I.</li>
+<li>A asserção I é uma proposição verdadeira, e a II é uma proposição
+falsa.</li>
+<li>A asserção I é uma proposição falsa, e a II é uma proposição
+verdadeira.</li>
+<li>As asserções I e II são proposições falsas.</li>
+</ol>
+<p><strong>Gabarito: A.</strong></p>
+<p><em>Resolução.</em> A árvore de chamadas tem um número exponencial de
+nós, mas é percorrida em profundidade: quando um ramo termina, suas
+chamadas são desempilhadas, e só fica na pilha o caminho da raiz até o
+nó atual (II é verdadeira). Como cada chamada filha reduz
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi><mo>+</mo><mi>j</mi></mrow><annotation encoding="application/x-tex">i + j</annotation></semantics></math>
+em pelo menos 1, esse caminho tem no máximo
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>m</mi><mo>+</mo><mi>n</mi></mrow><annotation encoding="application/x-tex">m + n</annotation></semantics></math>
+quadros de tamanho
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">O(1)</annotation></semantics></math>,
+logo o espaço é
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>m</mi><mo>+</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">O(m+n)</annotation></semantics></math>
+(I é verdadeira, e II a justifica). Ver o Teorema E1 e a coluna “Pilha
+medida” da Tabela 1. A alternativa D é a armadilha mais comum: tempo
+exponencial <strong>não</strong> implica espaço exponencial.</p>
+<h2 id="questão-2">Questão 2</h2>
+<p>Em sistemas de busca aproximada, não interessa a distância exata
+entre palavras muito diferentes. Basta saber se
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">l</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">v</mi></mrow><mrow><mo stretchy="true" form="prefix">(</mo><mi>a</mi><mo>,</mo><mi>b</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>≤</mo><mi>k</mi></mrow><annotation encoding="application/x-tex">\mathrm{lev}(a,b) \le k</annotation></semantics></math>,
+para um limiar
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>
+pequeno.</p>
+<p>O algoritmo de Ukkonen faz isso preenchendo apenas as células
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="true" form="prefix">(</mo><mi>i</mi><mo>,</mo><mi>j</mi><mo stretchy="true" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(i,j)</annotation></semantics></math>
+da matriz de programação dinâmica que satisfazem
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mo stretchy="true" form="prefix">|</mo><mi>i</mi><mo>−</mo><mi>j</mi><mo stretchy="true" form="postfix">|</mo></mrow><mo>≤</mo><mi>k</mi></mrow><annotation encoding="application/x-tex">|i - j| \le k</annotation></semantics></math>,
+mantendo somente duas linhas em memória. Além disso, ele responde
+imediatamente “distância maior que
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>”
+quando
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo minsize="1.2" maxsize="1.2" stretchy="false" form="prefix">|</mo><mrow><mo stretchy="true" form="prefix">|</mo><mi>a</mi><mo stretchy="true" form="postfix">|</mo></mrow><mo>−</mo><mrow><mo stretchy="true" form="prefix">|</mo><mi>b</mi><mo stretchy="true" form="postfix">|</mo></mrow><mo minsize="1.2" maxsize="1.2" stretchy="false" form="prefix">|</mo><mo>&gt;</mo><mi>k</mi></mrow><annotation encoding="application/x-tex">\big||a| - |b|\big| &gt; k</annotation></semantics></math>,
+e encerra a execução quando todas as células calculadas de uma linha
+excedem
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>.</p>
+<p>Considerando esse algoritmo, avalie as afirmações a seguir.</p>
+<p>I. Para
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>
+constante, o tempo de execução no pior caso é
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">O(n)</annotation></semantics></math>,
+em que
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi><mo>=</mo><mo>min</mo><mrow><mo stretchy="true" form="prefix">(</mo><mrow><mo stretchy="true" form="prefix">|</mo><mi>a</mi><mo stretchy="true" form="postfix">|</mo></mrow><mo>,</mo><mrow><mo stretchy="true" form="prefix">|</mo><mi>b</mi><mo stretchy="true" form="postfix">|</mo></mrow><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">n = \min(|a|, |b|)</annotation></semantics></math>,
+pois cada linha tem no máximo
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mi>k</mi><mo>+</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">2k + 1</annotation></semantics></math>
+células calculadas.</p>
+<ol start="2" type="I">
+<li><p>O melhor caso tem custo
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Ω</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\Omega(1)</annotation></semantics></math>
+e ocorre, por exemplo, quando a diferença entre os comprimentos das
+palavras é maior que
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>.</p></li>
+<li><p>O algoritmo sempre devolve o valor exato da distância de
+Levenshtein, para qualquer par de palavras e qualquer valor de
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>.</p></li>
+<li><p>O pior caso ocorre quando as palavras são completamente
+diferentes, pois nenhuma célula da faixa pode ser descartada.</p></li>
+</ol>
+<p>É correto apenas o que se afirma em</p>
+<ol type="A">
+<li>I e III.</li>
+<li>II e IV.</li>
+<li>I e II.</li>
+<li>I, II e IV.</li>
+<li>II, III e IV.</li>
+</ol>
+<p><strong>Gabarito: C.</strong></p>
+<p><em>Resolução.</em></p>
+<ul>
+<li><strong>I (verdadeira):</strong> cada linha calcula no máximo
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mi>k</mi><mo>+</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">2k+1</annotation></semantics></math>
+células e só se chega ao laço quando
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>m</mi><mo>≤</mo><mi>n</mi><mo>+</mo><mi>k</mi></mrow><annotation encoding="application/x-tex">m \le n + k</annotation></semantics></math>.
+Logo
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi><mo>=</mo><mi>O</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>k</mi><mo>⋅</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">T = O(k \cdot n)</annotation></semantics></math>,
+que é
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>n</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">O(n)</annotation></semantics></math>
+para
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>
+constante (Teorema 6 e Tabela 4).</li>
+<li><strong>II (verdadeira):</strong> se
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo minsize="1.2" maxsize="1.2" stretchy="false" form="prefix">|</mo><mrow><mo stretchy="true" form="prefix">|</mo><mi>a</mi><mo stretchy="true" form="postfix">|</mo></mrow><mo>−</mo><mrow><mo stretchy="true" form="prefix">|</mo><mi>b</mi><mo stretchy="true" form="postfix">|</mo></mrow><mo minsize="1.2" maxsize="1.2" stretchy="false" form="prefix">|</mo><mo>&gt;</mo><mi>k</mi></mrow><annotation encoding="application/x-tex">\big||a|-|b|\big| &gt; k</annotation></semantics></math>,
+a resposta sai sem calcular nenhuma célula (Seção 5, melhor caso).</li>
+<li><strong>III (falsa):</strong> o valor só é exato quando a distância
+é
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>≤</mo><mi>k</mi></mrow><annotation encoding="application/x-tex">\le k</annotation></semantics></math>;
+acima disso, o algoritmo responde apenas “maior que
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>”
+(Teorema 5).</li>
+<li><strong>IV (falsa):</strong> palavras muito diferentes fazem uma
+linha inteira ultrapassar
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>
+cedo, e o corte antecipado encerra a execução (Lema 3). O pior caso são
+palavras parecidas, no limite iguais, em que a faixa inteira é
+calculada.</li>
+</ul>
 <h1 id="referências">Referências</h1>
 <p>[1] LEVENSHTEIN, V. I. Binary codes capable of correcting deletions,
 insertions, and reversals. <em>Soviet Physics Doklady</em>, v. 10, n. 8,

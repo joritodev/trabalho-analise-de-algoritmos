@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { Benchmark } from "./modules/Benchmark";
+import { Enade } from "./modules/Enade";
 import { MatrixSimulator } from "./modules/MatrixSimulator";
 import { MemoryXray } from "./modules/MemoryXray";
 import { Overview } from "./modules/Overview";
 import { RecursionTree } from "./modules/RecursionTree";
 import { UkkonenCut } from "./modules/UkkonenCut";
 
-export type ModuleId = "overview" | "matrix" | "bench" | "tree" | "ukkonen" | "memory";
+export type ModuleId = "overview" | "matrix" | "bench" | "tree" | "ukkonen" | "memory" | "enade";
 
 const TABS: { id: ModuleId; letter?: string; label: string }[] = [
   { id: "overview", label: "Visão geral" },
@@ -17,6 +18,7 @@ const TABS: { id: ModuleId; letter?: string; label: string }[] = [
   { id: "tree", letter: "C", label: "Árvore" },
   { id: "ukkonen", letter: "D", label: "Ukkonen" },
   { id: "memory", letter: "E", label: "Memória" },
+  { id: "enade", label: "ENADE" },
 ];
 
 export function AppShell() {
@@ -75,6 +77,7 @@ export function AppShell() {
         {active === "tree" && <RecursionTree />}
         {active === "ukkonen" && <UkkonenCut />}
         {active === "memory" && <MemoryXray />}
+        {active === "enade" && <div className="min-h-0 flex-1 overflow-auto"><Enade /></div>}
       </div>
     </div>
   );

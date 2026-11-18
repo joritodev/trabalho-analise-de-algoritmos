@@ -109,6 +109,14 @@ export function Benchmark() {
     },
   ];
 
+  // Espaço medido pelos próprios algoritmos durante a execução.
+  const memSeries: Series[] = [
+    { id: "naive", label: "Recursão: pilha (quadros)", color: "var(--color-s-naive)", points: predicted.filter((p) => !p.naive!.aborted).map((p) => ({ x: p.n, y: p.naive!.memory })) },
+    { id: "wf-full", label: "WF: matriz completa", color: "var(--color-s-wf)", dashed: true, points: points.map((p) => ({ x: p.n, y: p.wf.memoryFull })) },
+    { id: "wf-two", label: "WF: duas linhas", color: "var(--color-s-wf)", points: points.map((p) => ({ x: p.n, y: p.wf.memoryTwo })) },
+    { id: "uk", label: "Ukkonen", color: "var(--color-s-uk)", points: points.map((p) => ({ x: p.n, y: Math.max(p.uk.memory, 1) })) },
+  ];
+
   const controls = (
     <>
       <Section title="Cenário">
@@ -204,7 +212,7 @@ export function Benchmark() {
           </div>
 
           <Card
-            title="Número de operações × tamanho da palavra (n)"
+            title="Complexidade temporal: operações × tamanho da palavra (n)"
             right={<Segmented<"log" | "lin"> value={logY ? "log" : "lin"} onChange={(v) => setLogY(v === "log")} options={[{ value: "log", label: "log" }, { value: "lin", label: "linear" }]} />}
           >
             <div className="mb-3 flex flex-wrap gap-x-4 gap-y-1.5">
@@ -253,10 +261,31 @@ export function Benchmark() {
             </Card>
           </div>
 
+          <Card title="Complexidade espacial: memória de trabalho × n (medida)">
+            <div className="mb-3 flex flex-wrap gap-x-4 gap-y-1.5">
+              {memSeries.map((s) => <LegendItem key={s.id} color={s.color} label={s.label} swatch={s.dashed ? "dash" : "line"} />)}
+            </div>
+            {points.length ? (
+              <LineChart series={memSeries} logY xLabel="n (letras)" yLabel="unidades de memória" formatY={(v) => fmtCompact(v).replace(/^1,00·/, "")} height={260} />
+            ) : (
+              <Empty running={running} />
+            )}
+            <div className="mt-3 grid gap-2 text-[11px] leading-relaxed text-ink-3 sm:grid-cols-2">
+              <p>
+                <b className="text-ink-2">Recursão Θ(m+n):</b> apesar do tempo exponencial, só uma cadeia de chamadas fica na pilha. A profundidade medida é
+                sempre m + n (aqui, 2n quadros).
+              </p>
+              <p>
+                <b className="text-ink-2">Matriz Θ(m·n) × duas linhas Θ(min(m,n)):</b> a tracejada cresce como n², a contínua como n. Ukkonen guarda as mesmas
+                duas linhas, por isso a curva coincide com a da versão de duas linhas.
+              </p>
+            </div>
+          </Card>
+
           {points.length > 0 && (
             <Card title="Tabela de medições">
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[640px] font-mono text-xs tabular-nums">
+                <table className="w-full min-w-[900px] font-mono text-xs tabular-nums">
                   <thead>
                     <tr className="border-b border-line text-left text-ink-3">
                       <th className="py-2 pr-3 font-normal">n</th>
@@ -266,7 +295,11 @@ export function Benchmark() {
                       <th className="py-2 pr-3 font-normal">tempo</th>
                       <th className="py-2 pr-3 font-normal">Ukkonen: células</th>
                       <th className="py-2 pr-3 font-normal">tempo</th>
-                      <th className="py-2 font-normal">dist ≤ k?</th>
+                      <th className="py-2 pr-3 font-normal">dist ≤ k?</th>
+                      <th className="py-2 pr-3 font-normal">pilha</th>
+                      <th className="py-2 pr-3 font-normal">matriz</th>
+                      <th className="py-2 pr-3 font-normal">2 linhas</th>
+                      <th className="py-2 font-normal">Ukkonen: mem.</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -279,7 +312,11 @@ export function Benchmark() {
                         <td className="py-1.5 pr-3">{fmtMs(p.wf.ms)}</td>
                         <td className="py-1.5 pr-3">{fmtInt(p.uk.ops)}</td>
                         <td className="py-1.5 pr-3">{fmtMs(p.uk.ms)}</td>
-                        <td className="py-1.5">{p.uk.distance === null ? "não (corte)" : `sim (${p.uk.distance})`}</td>
+                        <td className="py-1.5 pr-3">{p.uk.distance === null ? "não (corte)" : `sim (${p.uk.distance})`}</td>
+                        <td className="py-1.5 pr-3">{p.naive && !p.naive.aborted ? p.naive.memory : "—"}</td>
+                        <td className="py-1.5 pr-3">{fmtInt(p.wf.memoryFull)}</td>
+                        <td className="py-1.5 pr-3">{fmtInt(p.wf.memoryTwo)}</td>
+                        <td className="py-1.5">{fmtInt(p.uk.memory)}</td>
                       </tr>
                     ))}
                   </tbody>

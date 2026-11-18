@@ -15,3 +15,4 @@ thead th { border-top: 2px solid #333; border-bottom: 1.5px solid #333; }
 tbody tr:last-child td { border-bottom: 2px solid #333; }
 blockquote { margin: 1em 0; padding: .5em 1em; border-left: 3px solid #888; background: #f7f7f7; page-break-inside: avoid; }
 math[display="block"] { margin: .7em 0; }
+td[style*="right"] { white-space: nowrap; }

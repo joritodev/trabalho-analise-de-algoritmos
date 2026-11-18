@@ -3,7 +3,7 @@
  * Stress test executado fora da thread principal: mesmo quando a recursão
  * ingénua "trava", a interface continua a responder.
  */
-import { naiveCallCount, naiveRecursive, ukkonenBounded, wagnerFischerTwoRows } from "@/lib/levenshtein";
+import { naiveCallCount, naiveRecursive, ukkonenBounded, wagnerFischerFull, wagnerFischerTwoRows } from "@/lib/levenshtein";
 
 export type InputMode = "random" | "worst";
 
@@ -19,9 +19,11 @@ export interface BenchRequest {
 export interface BenchPoint {
   n: number;
   /** null quando n é grande demais até para prever (fase de grande escala). */
-  naive: { ops: number; ms: number; aborted: boolean; predicted: number } | null;
-  wf: { ops: number; ms: number };
-  uk: { ops: number; ms: number; distance: number | null };
+  /** memory = profundidade máxima da pilha (quadros), medida durante a execução. */
+  naive: { ops: number; ms: number; aborted: boolean; predicted: number; memory: number } | null;
+  /** memoryFull / memoryTwo = inteiros alocados pela matriz completa / duas linhas. */
+  wf: { ops: number; ms: number; memoryFull: number; memoryTwo: number };
+  uk: { ops: number; ms: number; distance: number | null; memory: number };
 }
 
 export type BenchMessage =
@@ -65,17 +67,18 @@ self.onmessage = (e: MessageEvent<BenchRequest>) => {
       naive = null;
     } else if (naiveDead || predicted > naiveBudget) {
       naiveDead = true;
-      naive = { ops: predicted, ms: NaN, aborted: true, predicted };
+      naive = { ops: predicted, ms: NaN, aborted: true, predicted, memory: 2 * n };
     } else {
       const t0 = performance.now();
       const r = naiveRecursive(a, b, naiveBudget);
-      naive = { ops: r.ops, ms: performance.now() - t0, aborted: r.aborted, predicted };
+      naive = { ops: r.ops, ms: performance.now() - t0, aborted: r.aborted, predicted, memory: r.memory };
       if (r.aborted) naiveDead = true;
     }
 
     post({ type: "progress", n, phase: "wf" });
     const wf = timeIt(() => wagnerFischerTwoRows(a, b));
     post({ type: "progress", n, phase: "uk" });
+    const full = wagnerFischerFull(a, b);
     const uk = timeIt(() => ukkonenBounded(a, b, k));
 
     post({
@@ -83,8 +86,8 @@ self.onmessage = (e: MessageEvent<BenchRequest>) => {
       point: {
         n,
         naive,
-        wf: { ops: wf.result.ops, ms: wf.ms },
-        uk: { ops: uk.result.ops, ms: uk.ms, distance: uk.result.distance },
+        wf: { ops: wf.result.ops, ms: wf.ms, memoryFull: full.memory, memoryTwo: wf.result.memory },
+        uk: { ops: uk.result.ops, ms: uk.ms, distance: uk.result.distance, memory: uk.result.memory },
       },
     });
   }

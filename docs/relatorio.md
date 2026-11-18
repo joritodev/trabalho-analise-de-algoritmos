@@ -10,7 +10,7 @@ lang: pt-BR
 
 # Resumo
 
-A distância de Levenshtein mede o número mínimo de inserções, deleções e substituições de caracteres necessárias para transformar uma palavra em outra. É a base de corretores ortográficos e de sistemas de busca aproximada (*fuzzy search*). Este trabalho analisa três algoritmos para o problema: a recursão ingênua, o algoritmo de Wagner-Fischer (programação dinâmica) e a variante de Ukkonen com faixa diagonal limitada por um limiar de erros $k$. Para cada um, provamos formalmente o custo de **pior caso** e o confirmamos empiricamente contando operações numa implementação em TypeScript. Os resultados são: a recursão ingênua é exponencial, com $\Omega(4^n/n) \le T(n) \le O(9^n)$ e, de forma exata, $T(n) = \Theta\big((3+2\sqrt2)^n/\sqrt n\big)$; Wagner-Fischer é $\Theta(m\cdot n)$ em tempo, com espaço reduzível de $\Theta(m\cdot n)$ para $\Theta(\min(m,n))$; e Ukkonen é $\Theta(k\cdot\min(m,n))$ no pior caso e $\Omega(1)$ no melhor. Uma aplicação web interativa (Next.js + React) acompanha o trabalho e permite reproduzir cada resultado.
+A distância de Levenshtein mede o número mínimo de inserções, deleções e substituições de caracteres necessárias para transformar uma palavra em outra. É a base de corretores ortográficos e de sistemas de busca aproximada (*fuzzy search*). Este trabalho analisa três algoritmos para o problema: a recursão ingênua, o algoritmo de Wagner-Fischer (programação dinâmica) e a variante de Ukkonen com faixa diagonal limitada por um limiar de erros $k$. Para cada um, provamos formalmente a complexidade **temporal e espacial** de **pior caso** e a comprovamos empiricamente numa implementação em TypeScript instrumentada, que mede operações, tempo real e bytes de memória. Os resultados são: a recursão ingênua é exponencial, com $\Omega(4^n/n) \le T(n) \le O(9^n)$ e, de forma exata, $T(n) = \Theta\big((3+2\sqrt2)^n/\sqrt n\big)$; Wagner-Fischer é $\Theta(m\cdot n)$ em tempo, com espaço reduzível de $\Theta(m\cdot n)$ para $\Theta(\min(m,n))$; e Ukkonen é $\Theta(k\cdot\min(m,n))$ no pior caso e $\Omega(1)$ no melhor. Uma aplicação web interativa (Next.js + React) acompanha o trabalho e permite reproduzir cada resultado.
 
 **Palavras-chave:** distância de edição; programação dinâmica; análise assintótica; pior caso; busca aproximada.
 
@@ -101,7 +101,15 @@ e portanto $T(n,n) = \Theta\big((1+\sqrt2)^{2n}/\sqrt n\big) \approx \Theta(5{,}
 
 > **Nota.** O limite $O(3^{\min(m,n)})$, às vezes citado para este algoritmo, não é um limite superior válido: $3^n$ é na verdade um limite *inferior* (basta seguir a diagonal). A Tabela 1 mostra $T(13,13) \approx 2{,}1\cdot10^9$, enquanto $3^{13} \approx 1{,}6\cdot10^6$.
 
-**Espaço.** A profundidade máxima da pilha é $m+n$ (cada chamada reduz $i+j$ em pelo menos 1), logo o espaço é $O(m+n)$.
+**Teorema E1 (espaço da recursão).** Para $m, n \ge 1$, a pilha de execução atinge exatamente $m+n$ quadros. Logo a complexidade espacial é $\Theta(m+n)$, embora o tempo seja exponencial.
+
+*Prova.* Cada quadro guarda apenas $i$, $j$, o custo $c$ e resultados parciais: memória $O(1)$. Em cada instante, os quadros vivos formam o caminho da raiz até a chamada em execução na árvore de recorrência, porque os ramos já encerrados foram desempilhados.
+
+**(Limite superior.)** Ao longo desse caminho, $i+j$ diminui pelo menos 1 a cada nível, começa em $m+n$ e o caminho termina assim que $i = 0$ ou $j = 0$. A última chamada não base tem $i, j \ge 1$, ou seja, $i + j \ge 2$. Assim, há no máximo $m+n-1$ quadros não base e mais um quadro base: no máximo $m+n$ quadros.
+
+**(O limite é atingido.)** A sequência $(m,n) \to (m-1,n) \to \cdots \to (1,n) \to (1,n-1) \to \cdots \to (1,1) \to (0,1)$ é um ramo da árvore com exatamente $m+n$ chamadas, e o percurso em profundidade sempre o visita. $\blacksquare$
+
+Este é um exemplo de que **tempo e espaço são medidas independentes**: a árvore tem $\Theta(5{,}83^n/\sqrt n)$ nós, mas só um caminho dela está na memória a cada instante.
 
 # 4. Abordagem 2: Wagner-Fischer (programação dinâmica)
 
@@ -134,7 +142,7 @@ Para $m,n \ge 1$, vale $m+n+1 \le 3mn$, logo $c_1\,mn \le T(m,n) \le (c_1 + 3c_2
 
 *Prova.* O cálculo da linha $i$ lê apenas a linha $i-1$ (dependências de cima e da diagonal) e a própria linha $i$ (dependência da esquerda). Depois que a linha $i$ está completa, nenhuma linha anterior a $i$ volta a ser lida e pode ser descartada. Como $\mathrm{lev}(a,b) = \mathrm{lev}(b,a)$, podemos trocar as cadeias para que o comprimento das linhas seja $\min(m,n)$. $\blacksquare$
 
-O custo dessa otimização é perder a tabela usada no *backtracking*, que reconstrói o alinhamento. Para obter o alinhamento em espaço linear existe o algoritmo de Hirschberg [4]. A Tabela 3 mostra o impacto prático: para $m = n = 10^5$ com inteiros de 4 bytes, a tabela completa precisaria de cerca de 37 GB, enquanto as duas linhas ocupam 781 KB.
+O custo dessa otimização é perder a tabela usada no *backtracking*, que reconstrói o alinhamento. Para obter o alinhamento em espaço linear existe o algoritmo de Hirschberg [4]. A Tabela 6 mostra o impacto prático: para $m = n = 10^5$ com inteiros de 4 bytes, a tabela completa precisaria de cerca de 37 GB, enquanto as duas linhas ocupam 781 KB.
 
 # 5. Abordagem 3: Ukkonen (faixa diagonal com limiar $k$)
 
@@ -187,56 +195,113 @@ $$
 
 Por fim, $T - (k+1)n = k(n-k-1) \ge 0$ para $n > k$, ou seja, $T = \Omega(k\cdot n)$. $\blacksquare$
 
-**Melhor caso.** Se $|m - n| > k$, a resposta sai em $O(1)$ sem calcular nenhuma célula: $\Omega(1)$. Com entradas aleatórias, o corte antecipado também costuma ocorrer nas primeiras linhas. Nas medições da Tabela 2, cadeias aleatórias com $k = 5$ calcularam entre 51 e 84 células, independentemente de $n$.
+**Melhor caso.** Se $|m - n| > k$, a resposta sai em $O(1)$ sem calcular nenhuma célula: $\Omega(1)$. Com entradas aleatórias, o corte antecipado também costuma ocorrer nas primeiras linhas. Nas medições da Tabela 4, cadeias aleatórias com $k = 5$ calcularam entre 51 e 73 células, independentemente de $n$.
 
-**Espaço.** Com duas linhas, $\Theta(\min(m,n))$, como no Teorema 4.
+**Teorema E2 (espaço do Ukkonen).** A implementação aloca exatamente $2(\min(m,n)+1)$ inteiros quando $|m-n| \le k$, e nenhum quando $|m-n| > k$. O espaço é $\Theta(\min(m,n))$ no pior caso e $O(1)$ no melhor.
 
-# 6. Validação empírica
+*Prova.* As únicas estruturas proporcionais à entrada são as duas linhas `prev` e `cur`, de tamanho $\min(m,n)+1$ após a troca das cadeias. Pelo argumento do Teorema 4, duas linhas bastam, pois a faixa da linha $i$ só lê a faixa da linha $i-1$. No corte por comprimento, o algoritmo retorna antes de alocá-las. $\blacksquare$
 
-Todos os algoritmos foram implementados em TypeScript (arquivo `src/lib/levenshtein.ts`) com um **contador de operações elementares**. A correção foi verificada por testes automáticos (`npm run check`):
+*Observação.* Como cada linha usa só $2k+1$ posições, seria possível indexar as linhas pela diagonal e reduzir o espaço para $\Theta(k)$. Mantivemos a versão $\Theta(\min(m,n))$ por simplicidade, e ela é a que foi medida na Seção 6.
+
+# 6. Comprovação empírica de tempo e espaço
+
+As provas das Seções 3 a 5 foram testadas na implementação em TypeScript (`src/lib/levenshtein.ts`). Cada função é **instrumentada**: além da distância, devolve a contagem da operação elementar (`ops`) e o pico de memória de trabalho (`memory`), medido durante a própria execução. São inteiros alocados simultaneamente, na programação dinâmica, ou a profundidade máxima da pilha, na recursão.
+
+## 6.1 Metodologia
+
+Há dois conjuntos de testes automáticos.
+
+**`npm run check` (correção).**
 
 - 5 000 pares aleatórios, nos quais as quatro implementações (recursiva, matriz completa, duas linhas e Ukkonen com $k = 0..12$) concordam;
-- o contador da recursão é **igual**, chamada a chamada, ao valor previsto pela recorrência $T(m,n)$;
 - a fórmula exata $(2k+1)n - k(k+1)$ do Teorema 6 vale para todo $1 \le n \le 60$ e $0 \le k \le n$.
 
-Os tempos abaixo foram medidos com Node.js 22 (motor V8) num Intel Xeon 2,1 GHz. No navegador os valores absolutos variam, mas as proporções se mantêm.
+**`npm run test:complexidade` (tempo e espaço).** Para cada algoritmo, o teste verifica:
 
-**Tabela 1 — Recursão ingênua (qualquer entrada).** Contagem medida igual à prevista em todas as linhas.
+1. **Tempo por contagem.** A operação elementar medida tem de ser **igual** à fórmula exata do pior caso.
+2. **Tempo real.** Ao **dobrar** $n$, o tempo deve se multiplicar por cerca de $2^p$ para um custo $\Theta(n^p)$: por 4 no Wagner-Fischer ($n^2$) e por 2 no Ukkonen com $k$ fixo ($n$). Na recursão, cada letra a mais deve multiplicar o tempo por um fator entre 4 e 9.
+3. **Espaço por contagem.** A memória de trabalho medida pelo algoritmo tem de ser igual à fórmula provada: $m+n$ quadros (Teorema E1), $(m+1)(n+1)$ ou $2(\min(m,n)+1)$ inteiros (Teorema 4 e Teorema E2).
+4. **Espaço real em bytes.** No instante de pico, com todas as estruturas ainda vivas, o algoritmo chama uma função de sonda, que lê `process.memoryUsage().arrayBuffers` do Node.js. A coleta de lixo é forçada e síncrona antes de cada medição (`--expose-gc --single-threaded-gc`), para que a linha de base não contenha lixo de execuções anteriores. Os bytes medidos têm de bater com $4 \times$ o número de inteiros (erro menor que 5%), e dobrar $n$ deve multiplicar a memória por 4 (matriz) ou por 2 (duas linhas).
+5. **Espaço $\Theta(\min(m,n))$.** Fixando a palavra curta e aumentando só a longa, a memória das duas linhas não pode mudar.
 
-| $n$ | Chamadas $T(n,n)$ | $T(n)/T(n-1)$ | Tempo |
+**Resultado: 93 de 93 verificações passaram,** em três execuções consecutivas. As tabelas abaixo saem desse teste, que também grava `docs/resultados-complexidade.md`. Ambiente: Node.js 22 (V8), Intel Xeon 2,1 GHz. Tempos absolutos variam com a máquina; contagens e memória são determinísticas.
+
+## 6.2 Recursão ingênua
+
+**Tabela 1 — Tempo e espaço da recursão (qualquer entrada é pior caso).**
+
+| $n$ | Chamadas $T(n,n)$ | $T(n)/T(n-1)$ | Tempo | Pilha medida (quadros) |
+|---:|---:|---:|---:|---:|
+| 4 | 481 | 5,117 | 0,03 ms | 8 |
+| 6 | 13 483 | 5,342 | 0,62 ms | 12 |
+| 8 | 398 593 | 5,463 | 3,4 ms | 16 |
+| 9 | 2 193 844 | 5,504 | 15,9 ms | 18 |
+| 10 | 12 146 179 | 5,536 | 79,5 ms | 20 |
+| 11 | 67 570 078 | 5,563 | 434 ms | 22 |
+| 12 | 377 393 953 | 5,585 | **2,41 s** | 24 |
+| 13 | $2{,}1\cdot10^{9}$ (previsto) | 5,604 | ≈ 13 s (extrapolado) | 26 |
+| 20 | $3{,}9\cdot10^{14}$ (previsto) | — | ≈ 29 dias | 40 |
+| 30 | $1{,}4\cdot10^{22}$ (previsto) | — | ≈ 2,9 milhões de anos | 60 |
+
+- **Tempo.** A razão $T(n)/T(n-1)$ fica entre 4 e 9 (Teoremas 1 e 2) e converge para $3 + 2\sqrt2 \approx 5{,}83$. Cada letra a mais multiplica o tempo por cerca de 5,6, o que confirma empiricamente o limite de 12–13 letras.
+- **Espaço.** A pilha medida é exatamente $2n = m+n$ em todas as linhas, e também nos casos $m \ne n$ testados ($3 \times 9$, $9 \times 3$). Enquanto o tempo cresce cerca de $5{,}6\times$ por letra, a memória cresce só 2 quadros por letra.
+
+## 6.3 Wagner-Fischer
+
+**Tabela 2 — Tempo e espaço do Wagner-Fischer (qualquer entrada é pior caso).** Bytes medidos no pico de memória.
+
+| $n$ | Células | Células$/n^2$ | Tempo | ×tempo | Matriz completa | ×mem | Duas linhas | ×mem |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 250 | 62 500 | 1,000 | 0,44 ms | — | 246,1 KB | — | 2,0 KB | — |
+| 500 | 250 000 | 1,000 | 2,11 ms | 4,80 | 980,5 KB | 3,98 | 3,9 KB | 2,00 |
+| 1 000 | 1 000 000 | 1,000 | 10,57 ms | 5,02 | 3,82 MB | 3,99 | 7,8 KB | 2,00 |
+| 2 000 | 4 000 000 | 1,000 | 31,26 ms | 2,96 | 15,27 MB | 4,00 | 15,6 KB | 2,00 |
+| 4 000 | 16 000 000 | 1,000 | 124,13 ms | 3,97 | 61,07 MB | 4,00 | 31,3 KB | 2,00 |
+
+- **Tempo $\Theta(n^2)$.** A contagem é exatamente $n^2$ e o tempo real se multiplica, em média, por cerca de 4 quando $n$ dobra. As oscilações vêm do cache e do compilador JIT.
+- **Espaço.** Os bytes reais da matriz se multiplicam por **4,00** ao dobrar $n$ ($\Theta(n^2)$), e os das duas linhas por **2,00** ($\Theta(n)$). Os bytes medidos coincidem com $4 \times$ o número de inteiros alocados.
+
+**Tabela 3 — Espaço $\Theta(\min(m,n))$: palavra curta fixa em 200 letras.**
+
+| $m$ (palavra longa) | $n$ (palavra curta) | Duas linhas | Matriz completa |
 |---:|---:|---:|---:|
-| 4 | 481 | 5,117 | 0,03 ms |
-| 6 | 13 483 | 5,342 | 0,62 ms |
-| 8 | 398 593 | 5,463 | 3,4 ms |
-| 9 | 2 193 844 | 5,504 | 15,9 ms |
-| 10 | 12 146 179 | 5,536 | 79,5 ms |
-| 11 | 67 570 078 | 5,563 | 434 ms |
-| 12 | 377 393 953 | 5,585 | **2,41 s** |
-| 13 | $2{,}1\cdot10^{9}$ (previsto) | 5,604 | ≈ 13 s (extrapolado) |
-| 20 | $3{,}9\cdot10^{14}$ (previsto) | — | ≈ 29 dias |
-| 30 | $1{,}4\cdot10^{22}$ (previsto) | — | ≈ 2,9 milhões de anos |
+| 500 | 200 | 1,6 KB | 393,4 KB |
+| 2 000 | 200 | 1,6 KB | 1,53 MB |
+| 8 000 | 200 | 1,6 KB | 6,13 MB |
 
-A razão $T(n)/T(n-1)$ fica entre 4 e 9 (Teoremas 1 e 2) e converge para $3 + 2\sqrt2 \approx 5{,}83$ (Observação da Seção 3). Cada letra a mais multiplica o tempo por cerca de 5,6: com 12 letras a função já leva segundos, o que confirma empiricamente o limite de 12–13 letras.
+A versão de duas linhas não cresce com a palavra longa, como prevê o Teorema 4, enquanto a matriz cresce linearmente com $m$.
 
-**Tabela 2 — Wagner-Fischer (duas linhas) e Ukkonen ($k = 5$).** No Ukkonen foi usado o pior caso ($a = b$).
+## 6.4 Ukkonen
 
-| $n$ | WF: células | WF: $\text{ops}/n^2$ | WF: tempo | Ukkonen: células | Ukkonen: $\text{ops}/((2k{+}1)n)$ | Ukkonen: tempo | Ukkonen (aleatória): células |
-|---:|---:|---:|---:|---:|---:|---:|---:|
-| 100 | 10 000 | 1,000 | 0,06 ms | 1 070 | 0,973 | 0,010 ms | 62 |
-| 500 | 250 000 | 1,000 | 1,8 ms | 5 470 | 0,995 | 0,039 ms | 84 |
-| 1 000 | 1 000 000 | 1,000 | 7,3 ms | 10 970 | 0,997 | 0,077 ms | 62 |
-| 2 000 | 4 000 000 | 1,000 | 29,7 ms | 21 970 | 0,999 | 0,159 ms | 51 |
-| 4 000 | 16 000 000 | 1,000 | 96,1 ms | 43 970 | 0,999 | 0,289 ms | 62 |
+**Tabela 4 — Tempo e espaço do Ukkonen, $k = 5$, pior caso ($a = b$).**
 
-Leitura da tabela:
+| $n$ | Células | Células$/((2k{+}1)n)$ | Tempo | ×tempo | Memória medida | Células (entrada aleatória) |
+|---:|---:|---:|---:|---:|---:|---:|
+| 1 000 | 10 970 | 0,9973 | 0,087 ms | — | 7,8 KB | 73 |
+| 2 000 | 21 970 | 0,9986 | 0,182 ms | 2,09 | 15,6 KB | 62 |
+| 4 000 | 43 970 | 0,9993 | 0,343 ms | 1,89 | 31,3 KB | 51 |
+| 8 000 | 87 970 | 0,9997 | 0,832 ms | 2,43 | 62,5 KB | 62 |
+| 16 000 | 175 970 | 0,9998 | 1,330 ms | 1,60 | 125,0 KB | 51 |
 
-- **Wagner-Fischer.** A razão $\text{ops}/n^2$ é exatamente 1 e o tempo quadruplica quando $n$ dobra: comportamento quadrático.
-- **Ukkonen.** A razão $\text{ops}/((2k+1)n)$ converge para 1 e o tempo dobra quando $n$ dobra: comportamento linear em $n$ para $k$ fixo.
-- **Curvas planas.** Uma razão $\text{ops}/\text{limite}$ que fica constante quando $n$ cresce é a evidência empírica de que o limite de pior caso provado é apertado.
+**Tabela 5 — Ukkonen com $n = 8\,000$ fixo, variando $k$ (pior caso).**
 
-> **Lição de implementação.** Uma primeira versão do Ukkonen reiniciava a linha inteira (`fill`) a cada iteração. O contador de células continuava linear, mas o tempo crescia de forma quadrática, porque o `fill` custa $O(n)$ por linha. A versão final reinicia apenas a célula de borda da faixa. Isso mostra que a operação elementar escolhida na análise precisa de fato dominar o custo real.
+| $k$ | Células | Células$/(k\cdot n)$ | Tempo |
+|---:|---:|---:|---:|
+| 2 | 39 994 | 2,500 | 0,33 ms |
+| 4 | 71 980 | 2,249 | 0,83 ms |
+| 8 | 135 928 | 2,124 | 1,48 ms |
+| 16 | 263 728 | 2,060 | 2,44 ms |
+| 32 | 518 944 | 2,027 | 4,80 ms |
 
-**Tabela 3 — Memória (inteiros de 4 bytes, $m = n$).**
+- **Tempo $\Theta(k\cdot n)$.** A contagem coincide com $(2k+1)n - k(k+1)$ em todos os casos. Com $k$ fixo, o tempo dobra quando $n$ dobra (Tabela 4). Com $n$ fixo, a razão células$/(k \cdot n)$ converge para 2 (Tabela 5), ou seja, o custo também é linear em $k$.
+- **Melhor caso $\Omega(1)$.** Com $|m - n| > k$ ($m = 100\,000$, $n = 10$, $k = 3$), o teste mediu 0 células e 0 bytes alocados. Com entradas aleatórias, o corte antecipado limita o trabalho a dezenas de células, independentemente de $n$.
+- **Espaço $\Theta(\min(m,n))$.** A memória dobra quando $n$ dobra e coincide com $2(n+1)$ inteiros de 4 bytes (Teorema E2).
+
+> **Lição de implementação.** Uma primeira versão do Ukkonen reiniciava a linha inteira (`fill`) a cada iteração. O contador de células continuava linear, mas o tempo crescia de forma quadrática, porque o `fill` custa $O(n)$ por linha. O teste de tempo real ("dobrar $n$ dobra o tempo") detectou o problema. A versão final reinicia apenas a célula de borda da faixa. Isso mostra que a operação elementar escolhida na análise precisa de fato dominar o custo real, e por isso medir só a contagem não basta.
+
+## 6.5 Projeção de memória para entradas grandes
+
+**Tabela 6 — Memória teórica (inteiros de 4 bytes, $m = n$), validada pelas medições acima.**
 
 | $m = n$ | Matriz completa | Duas linhas | Economia |
 |---:|---:|---:|---:|
@@ -251,7 +316,8 @@ Leitura da tabela:
 |---|---|---|---|
 | Pior caso (tempo) | $\Theta\big((3+2\sqrt2)^n/\sqrt n\big)$ | $\Theta(m\cdot n)$ | $\Theta(k\cdot\min(m,n))$ |
 | Melhor caso (tempo) | igual ao pior | igual ao pior | $\Omega(1)$ |
-| Espaço | $O(m+n)$ (pilha) | $\Theta(mn)$ ou $\Theta(\min(m,n))$ | $\Theta(\min(m,n))$ |
+| Espaço (pior caso) | $\Theta(m+n)$ (pilha) | $\Theta(mn)$ ou $\Theta(\min(m,n))$ | $\Theta(\min(m,n))$ |
+| Espaço medido ($n = 4\,000$) | $2n$ quadros | 61 MB ou 31 KB | 31 KB |
 | Resposta | distância exata | distância exata + alinhamento | distância se $\le k$ |
 | Técnica de prova | indução + Pascal | somatório duplo | lema da faixa + contagem exata |
 
@@ -264,10 +330,11 @@ Como demonstração prática, foi desenvolvida uma aplicação web em **Next.js 
 | Módulo | Função | Resultado do relatório que demonstra |
 |---|---|---|
 | **A. Simulador da matriz** | Preenche $D$ célula a célula (play/pause, avançar, retroceder), colore cada operação e desenha o caminho ótimo do *backtracking* | Recorrência (Seção 2) e Teorema 3 |
-| **B. Stress test** | Mede operações × $n$ ao vivo num *Web Worker*; mostra a razão $T(n)/T(n-1)$ e as razões ops/limite | Teoremas 1, 2, 3 e 6; Tabelas 1 e 2 |
+| **B. Stress test** | Mede operações **e memória** × $n$ ao vivo num *Web Worker*; mostra a razão $T(n)/T(n-1)$, as razões ops/limite e o gráfico de espaço medido | Teoremas 1 a 4, 6, E1 e E2; Tabelas 1 a 4 |
 | **C. Árvore de recorrência** | Desenha a árvore de chamadas da recursão, com subproblemas repetidos em vermelho | Desperdício da Seção 3 e motivação da PD |
 | **D. Corte de Ukkonen** | *Slider* de $k$ que aplica a máscara diagonal; mostra células calculadas, ignoradas e abandonadas | Lemas 1 a 3 e Teorema 6 |
-| **E. Raio-X de memória** | Compara a matriz completa com duas linhas, até $n = 10^6$ | Teorema 4 e Tabela 3 |
+| **E. Raio-X de memória** | Compara a matriz completa com duas linhas, até $n = 10^6$ | Teorema 4 e Tabela 6 |
+| **ENADE** | As duas questões do Apêndice A, com correção e resolução comentada | Teoremas E1, 6 e Lema 3 |
 
 **Decisões de engenharia.**
 
@@ -275,17 +342,88 @@ Como demonstração prática, foi desenvolvida uma aplicação web em **Next.js 
 - Acima de um orçamento de chamadas, a recursão é abortada e a curva continua com a contagem **exata** prevista pela recorrência (calculada em $O(mn)$), sem executar bilhões de chamadas.
 - A aplicação é exportada como site estático, sem servidor.
 
-Para executar: `npm install && npm run dev`, depois abrir `http://localhost:3000`. Os testes rodam com `npm run check`.
+Para executar: `npm install && npm run dev`, depois abrir `http://localhost:3000`. Os testes rodam com `npm run check` (correção) e `npm run test:complexidade` (tempo e espaço).
 
 # 9. Conclusão
 
-Provamos formalmente o custo de pior caso das três abordagens e confirmamos cada limite com contagens exatas de operações:
+Provamos formalmente a complexidade **temporal e espacial** de pior caso das três abordagens e comprovamos cada limite com testes automáticos: contagem exata de operações, tempo real e bytes de memória medidos (93 de 93 verificações):
 
-- a **recursão ingênua** é exponencial em todas as entradas, crescendo cerca de $5{,}83\times$ por letra;
-- **Wagner-Fischer** elimina a recomputação e atinge $\Theta(mn)$, com espaço reduzível a $\Theta(\min(m,n))$;
-- **Ukkonen** explora o limiar $k$ e atinge $\Theta(k\cdot\min(m,n))$ no pior caso e $\Omega(1)$ no melhor, o que o torna adequado para correção ortográfica em tempo real.
+- a **recursão ingênua** é exponencial no tempo em todas as entradas, crescendo cerca de $5{,}83\times$ por letra, mas usa só $\Theta(m+n)$ de memória;
+- **Wagner-Fischer** elimina a recomputação e atinge tempo $\Theta(mn)$, com espaço reduzível de $\Theta(mn)$ para $\Theta(\min(m,n))$, como mostram os fatores 4,00 e 2,00 medidos ao dobrar $n$;
+- **Ukkonen** explora o limiar $k$ e atinge tempo $\Theta(k\cdot\min(m,n))$ e espaço $\Theta(\min(m,n))$ no pior caso, e $\Omega(1)$ no melhor, o que o torna adequado para correção ortográfica em tempo real.
 
 O trabalho também mostra que a análise assintótica precisa estar alinhada com a implementação: um detalhe como reiniciar uma linha inteira pode, sem alterar a contagem de células, transformar um algoritmo linear em quadrático.
+
+# Apêndice A — Questões modelo ENADE
+
+As questões seguem o formato do ENADE e estão também na aba **ENADE** da aplicação, com correção interativa.
+
+## Questão 1
+
+Um corretor ortográfico calcula a distância de Levenshtein entre duas palavras $a$ e $b$, de tamanhos $m$ e $n$, com a função recursiva a seguir, sem memoização.
+
+```text
+lev(i, j):
+    se i = 0: retorne j
+    se j = 0: retorne i
+    c ← 0 se a[i] = b[j], senão 1
+    retorne min(lev(i−1, j) + 1, lev(i, j−1) + 1, lev(i−1, j−1) + c)
+```
+
+Em testes com palavras de 12 letras, a função executou cerca de $3{,}8 \cdot 10^8$ chamadas. Ainda assim, o consumo de memória permaneceu pequeno durante toda a execução.
+
+Considerando essa situação, avalie as asserções a seguir e a relação proposta entre elas.
+
+I. Embora o tempo de execução dessa função seja exponencial, sua complexidade espacial é $O(m + n)$.
+
+**PORQUE**
+
+II. Em cada instante, a pilha de execução contém apenas as chamadas do caminho entre a chamada inicial e a chamada atual, e cada chamada reduz o valor de $i + j$ em pelo menos uma unidade.
+
+A respeito dessas asserções, assinale a opção correta.
+
+A) As asserções I e II são proposições verdadeiras, e a II é uma justificativa correta da I.
+B) As asserções I e II são proposições verdadeiras, mas a II não é uma justificativa correta da I.
+C) A asserção I é uma proposição verdadeira, e a II é uma proposição falsa.
+D) A asserção I é uma proposição falsa, e a II é uma proposição verdadeira.
+E) As asserções I e II são proposições falsas.
+
+**Gabarito: A.**
+
+*Resolução.* A árvore de chamadas tem um número exponencial de nós, mas é percorrida em profundidade: quando um ramo termina, suas chamadas são desempilhadas, e só fica na pilha o caminho da raiz até o nó atual (II é verdadeira). Como cada chamada filha reduz $i + j$ em pelo menos 1, esse caminho tem no máximo $m + n$ quadros de tamanho $O(1)$, logo o espaço é $O(m+n)$ (I é verdadeira, e II a justifica). Ver o Teorema E1 e a coluna "Pilha medida" da Tabela 1. A alternativa D é a armadilha mais comum: tempo exponencial **não** implica espaço exponencial.
+
+## Questão 2
+
+Em sistemas de busca aproximada, não interessa a distância exata entre palavras muito diferentes. Basta saber se $\mathrm{lev}(a,b) \le k$, para um limiar $k$ pequeno.
+
+O algoritmo de Ukkonen faz isso preenchendo apenas as células $(i,j)$ da matriz de programação dinâmica que satisfazem $|i - j| \le k$, mantendo somente duas linhas em memória. Além disso, ele responde imediatamente "distância maior que $k$" quando $\big||a| - |b|\big| > k$, e encerra a execução quando todas as células calculadas de uma linha excedem $k$.
+
+Considerando esse algoritmo, avalie as afirmações a seguir.
+
+I. Para $k$ constante, o tempo de execução no pior caso é $O(n)$, em que $n = \min(|a|, |b|)$, pois cada linha tem no máximo $2k + 1$ células calculadas.
+
+II. O melhor caso tem custo $\Omega(1)$ e ocorre, por exemplo, quando a diferença entre os comprimentos das palavras é maior que $k$.
+
+III. O algoritmo sempre devolve o valor exato da distância de Levenshtein, para qualquer par de palavras e qualquer valor de $k$.
+
+IV. O pior caso ocorre quando as palavras são completamente diferentes, pois nenhuma célula da faixa pode ser descartada.
+
+É correto apenas o que se afirma em
+
+A) I e III.
+B) II e IV.
+C) I e II.
+D) I, II e IV.
+E) II, III e IV.
+
+**Gabarito: C.**
+
+*Resolução.*
+
+- **I (verdadeira):** cada linha calcula no máximo $2k+1$ células e só se chega ao laço quando $m \le n + k$. Logo $T = O(k \cdot n)$, que é $O(n)$ para $k$ constante (Teorema 6 e Tabela 4).
+- **II (verdadeira):** se $\big||a|-|b|\big| > k$, a resposta sai sem calcular nenhuma célula (Seção 5, melhor caso).
+- **III (falsa):** o valor só é exato quando a distância é $\le k$; acima disso, o algoritmo responde apenas "maior que $k$" (Teorema 5).
+- **IV (falsa):** palavras muito diferentes fazem uma linha inteira ultrapassar $k$ cedo, e o corte antecipado encerra a execução (Lema 3). O pior caso são palavras parecidas, no limite iguais, em que a faixa inteira é calculada.
 
 # Referências
 
